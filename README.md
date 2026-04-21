@@ -167,6 +167,7 @@ Content-Type: application/json
 ```
 
 **Expected response (201):**
+
 ```json
 {
   "status": "success",
@@ -199,6 +200,7 @@ Content-Type: application/json
 ```
 
 **Expected response (201):**
+
 ```json
 {
   "status": "success",
@@ -239,6 +241,7 @@ Content-Type: application/json
 ```
 
 **Expected response (200):**
+
 ```json
 {
   "status": "success",
@@ -255,6 +258,7 @@ Content-Type: application/json
 After this call, the customer's `kycVerified` flag is `true`.
 
 **What blocks this from succeeding:**
+
 - BVN/NIN not seeded in NIBSS → `400 Bad Request`
 - Date of birth does not match the NIBSS record → `400 Bad Request`
 - KYC already verified → `409 Conflict`
@@ -274,6 +278,7 @@ Authorization: Bearer <token>
 No request body needed — the KYC details are already stored on the customer record.
 
 **Expected response (201):**
+
 ```json
 {
   "status": "success",
@@ -302,6 +307,7 @@ Authorization: Bearer <token>
 ```
 
 **Expected response (200):**
+
 ```json
 {
   "status": "success",
@@ -337,6 +343,7 @@ Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 > On network failure, retry with the **same key** to get the original result without double-debiting.
 
 **Expected response (200):**
+
 ```json
 {
   "status": "success",
@@ -353,6 +360,7 @@ Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 > **Save the `transactionId`** for the next step.
 
 **What can fail here:**
+
 - Insufficient balance → `400 Bad Request`
 - Recipient account not found → `404 Not Found`
 - KYC not verified → `401 Unauthorized`
@@ -370,6 +378,7 @@ Authorization: Bearer <token>
 ```
 
 **Expected response (200):**
+
 ```json
 {
   "status": "success",
@@ -398,6 +407,7 @@ Authorization: Bearer <token>
 ```
 
 **Expected response (200):**
+
 ```json
 {
   "status": "success",
@@ -427,6 +437,7 @@ Authorization: Bearer <token>
 ```
 
 **Expected response (200):**
+
 ```json
 {
   "status": "success",
