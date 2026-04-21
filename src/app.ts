@@ -35,13 +35,11 @@ app.get("/health", (_req, res) => {
 });
 
 // ─── API Docs ─────────────────────────────────────────────────────────────────
-// Interactive Swagger UI
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
-// Raw OpenAPI JSON — import this URL into Postman: GET /api/docs/json
 app.get("/api/docs/json", (_req, res) => {
   res.setHeader("Content-Type", "application/json");
   res.send(swaggerSpec);
 });
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/auth", authLimiter, authRoutes);
