@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
 
 import authRoutes from "./routes/auth";
 import onboardingRoutes from "./routes/onboarding";
@@ -10,10 +11,13 @@ import transactionRoutes from "./routes/transaction";
 import { errorHandler } from "./middleware/errorHandler";
 import { authLimiter, transferLimiter } from "./middleware/rateLimiter";
 import { env } from "./config/env";
+import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
 // ─── Security & Parsing ──────────────────────────────────────────────────────
+// Relax CSP on /api/docs so Swagger UI can load its inline scripts/styles
+app.use("/api/docs", helmet({ contentSecurityPolicy: false }));
 app.use(helmet());
 app.use(
   cors({
@@ -28,6 +32,15 @@ app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// ─── API Docs ─────────────────────────────────────────────────────────────────
+// Interactive Swagger UI
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+// Raw OpenAPI JSON — import this URL into Postman: GET /api/docs/json
+app.get("/api/docs/json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
 });
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
