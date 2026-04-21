@@ -16,9 +16,9 @@ import { swaggerSpec } from "./config/swagger";
 const app = express();
 
 // ─── Security & Parsing ──────────────────────────────────────────────────────
-// Relax CSP on /api/docs so Swagger UI can load its inline scripts/styles
-app.use("/api/docs", helmet({ contentSecurityPolicy: false }));
-app.use(helmet());
+// CSP is disabled globally — Swagger UI requires inline scripts/styles.
+// All other helmet protections (HSTS, frameguard, COEP, etc.) remain active.
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(
   cors({
     origin: env.NODE_ENV === "production" ? false : "*",

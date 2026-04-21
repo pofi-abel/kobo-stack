@@ -6,15 +6,15 @@ A TypeScript/Express backend that integrates with the [NibssByPhoenix](https://n
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js + TypeScript |
-| Framework | Express v5 |
-| Database | MongoDB Atlas (Mongoose) |
-| Validation | Zod v4 |
-| Auth | JWT (jsonwebtoken) + bcryptjs |
-| HTTP Client | Axios |
-| Docs | Swagger UI (swagger-jsdoc + swagger-ui-express) |
+| Layer       | Technology                                      |
+| ----------- | ----------------------------------------------- |
+| Runtime     | Node.js + TypeScript                            |
+| Framework   | Express v5                                      |
+| Database    | MongoDB Atlas (Mongoose)                        |
+| Validation  | Zod v4                                          |
+| Auth        | JWT (jsonwebtoken) + bcryptjs                   |
+| HTTP Client | Axios                                           |
+| Docs        | Swagger UI (swagger-jsdoc + swagger-ui-express) |
 
 ---
 
@@ -37,7 +37,7 @@ cp .env.example .env
 Edit `.env` with your real values:
 
 ```env
-PORT=5000
+PORT=4000
 NODE_ENV=development
 
 # MongoDB Atlas connection string
@@ -62,10 +62,11 @@ npm run dev
 ```
 
 You should see:
+
 ```
 MongoDB Atlas connected
 NIBSS token acquired
-Server running on port 5000 [development]
+Server running on port 4000 [development]
 ```
 
 ### 4. Build for production
@@ -80,13 +81,15 @@ npm start
 ## API Documentation
 
 ### Swagger UI (interactive)
+
 ```
-http://localhost:5000/api/docs
+http://localhost:4000/api/docs
 ```
 
 ### Postman Collection (OpenAPI JSON)
+
 ```
-http://localhost:5000/api/docs/json
+http://localhost:4000/api/docs/json
 ```
 
 In Postman: **Import → Link** → paste the URL above. Postman will generate a complete collection from the OpenAPI spec.
@@ -96,40 +99,45 @@ In Postman: **Import → Link** → paste the URL above. Postman will generate a
 ## Endpoint Summary
 
 ### Auth
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | None | Register a new customer |
-| POST | `/api/auth/login` | None | Login → receive JWT |
+
+| Method | Path                 | Auth | Description             |
+| ------ | -------------------- | ---- | ----------------------- |
+| POST   | `/api/auth/register` | None | Register a new customer |
+| POST   | `/api/auth/login`    | None | Login → receive JWT     |
 
 ### Onboarding & KYC
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/admin/insert-bvn` | `X-Admin-Key` | Seed test BVN into NIBSS |
-| POST | `/api/admin/insert-nin` | `X-Admin-Key` | Seed test NIN into NIBSS |
-| POST | `/api/onboarding/verify` | JWT | Verify BVN/NIN → set `kycVerified = true` |
+
+| Method | Path                     | Auth          | Description                               |
+| ------ | ------------------------ | ------------- | ----------------------------------------- |
+| POST   | `/api/admin/insert-bvn`  | `X-Admin-Key` | Seed test BVN into NIBSS                  |
+| POST   | `/api/admin/insert-nin`  | `X-Admin-Key` | Seed test NIN into NIBSS                  |
+| POST   | `/api/onboarding/verify` | JWT           | Verify BVN/NIN → set `kycVerified = true` |
 
 ### Account Management
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/account/create` | JWT + KYC | Create bank account (one per customer, pre-funded ₦15,000) |
-| GET | `/api/account/me` | JWT | My account details + live balance |
-| GET | `/api/account/balance` | JWT | Balance check |
-| GET | `/api/account/name-enquiry/:accountNumber` | JWT | Resolve account number to name |
-| GET | `/api/account/all` | JWT + `X-Admin-Key` | List all accounts in this bank |
+
+| Method | Path                                       | Auth                | Description                                                |
+| ------ | ------------------------------------------ | ------------------- | ---------------------------------------------------------- |
+| POST   | `/api/account/create`                      | JWT + KYC           | Create bank account (one per customer, pre-funded ₦15,000) |
+| GET    | `/api/account/me`                          | JWT                 | My account details + live balance                          |
+| GET    | `/api/account/balance`                     | JWT                 | Balance check                                              |
+| GET    | `/api/account/name-enquiry/:accountNumber` | JWT                 | Resolve account number to name                             |
+| GET    | `/api/account/all`                         | JWT + `X-Admin-Key` | List all accounts in this bank                             |
 
 ### Transactions
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/transactions/transfer` | JWT + KYC | Intra/inter-bank transfer |
-| GET | `/api/transactions/history` | JWT | My transaction history (paginated) |
-| GET | `/api/transactions/:transactionId` | JWT | Transaction status (TSQ) |
+
+| Method | Path                               | Auth      | Description                        |
+| ------ | ---------------------------------- | --------- | ---------------------------------- |
+| POST   | `/api/transactions/transfer`       | JWT + KYC | Intra/inter-bank transfer          |
+| GET    | `/api/transactions/history`        | JWT       | My transaction history (paginated) |
+| GET    | `/api/transactions/:transactionId` | JWT       | Transaction status (TSQ)           |
 
 ### Utility
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/health` | None | Health check |
-| GET | `/api/docs` | None | Swagger UI |
-| GET | `/api/docs/json` | None | OpenAPI JSON (Postman import) |
+
+| Method | Path             | Auth | Description                   |
+| ------ | ---------------- | ---- | ----------------------------- |
+| GET    | `/health`        | None | Health check                  |
+| GET    | `/api/docs`      | None | Swagger UI                    |
+| GET    | `/api/docs/json` | None | OpenAPI JSON (Postman import) |
 
 ---
 

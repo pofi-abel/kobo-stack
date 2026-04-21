@@ -18,9 +18,7 @@ const options: Options = {
         "4. `POST /api/account/create` → bank account created with ₦15,000\n\n" +
         "📥 **Download Postman collection:** `GET /api/docs/json`",
     },
-    servers: [
-      { url: "http://localhost:5000", description: "Local development" },
-    ],
+    servers: [{ url: "http://localhost:4000", description: "Local development" }],
     components: {
       securitySchemes: {
         bearerAuth: {
