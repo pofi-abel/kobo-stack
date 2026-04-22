@@ -9,21 +9,55 @@ export interface NibssCreateAccountPayload {
   dob: string;
 }
 
+/**
+ * Actual NIBSS response: { message, account: { accountNumber, accountName, bankCode, ... } }
+ */
 export interface NibssCreateAccountResponse {
   message: string;
+  account: {
+    accountNumber: string;
+    accountName: string;
+    bankCode: string;
+    fintechId: string;
+    kycType: string;
+    kycID: string;
+    balance: number;
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+/**
+ * Actual NIBSS response: { accountName, accountNumber, bankCode }
+ */
+export interface NibssNameEnquiryResponse {
+  accountName: string;
   accountNumber: string;
   bankCode: string;
-  bankName: string;
-  balance: number;
 }
 
-export interface NibssNameEnquiryResponse {
+/**
+ * Account entry shape as returned by GET /api/accounts
+ */
+export interface NibssAccountEntry {
+  _id: string;
   accountNumber: string;
   accountName: string;
-  bankName: string;
+  bankCode: string;
+  fintechId: string;
+  kycType: string;
+  kycID: string;
+  balance: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
+/**
+ * Actual NIBSS response: { accountName, accountNumber, balance }
+ */
 export interface NibssBalanceResponse {
+  accountName: string;
   accountNumber: string;
   balance: number;
 }
@@ -34,24 +68,39 @@ export interface NibssTransferPayload {
   amount: string;
 }
 
+/**
+ * Actual NIBSS response: { reference, senderAccount, receiverAccount, amount, status, _id, createdAt, updatedAt }
+ */
 export interface NibssTransferResponse {
-  message: string;
-  transactionId: string;
+  reference: string;
+  senderAccount: string;
+  receiverAccount: string;
   amount: number;
-  from: string;
-  to: string;
   status: string;
+  _id: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
+/**
+ * Actual NIBSS response: { _id, reference, senderAccount, receiverAccount, amount, status, createdAt, updatedAt }
+ */
 export interface NibssTransactionResponse {
-  transactionId: string;
-  status: string;
+  _id: string;
+  reference: string;
+  senderAccount: string;
+  receiverAccount: string;
   amount: number;
-  from: string;
-  to: string;
-  timestamp: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
+/**
+ * Unified identity response — our code normalizes both BVN and NIN shapes into this.
+ * BVN raw: { success, message, data: { bvn, firstName, lastName, dob, phone } }
+ * NIN raw: { message, response: { nin, firstName, lastName, dob } }
+ */
 export interface NibssValidateIdentityResponse {
   success: boolean;
   message: string;
@@ -60,8 +109,22 @@ export interface NibssValidateIdentityResponse {
     nin?: string;
     firstName: string;
     lastName: string;
-    dob: string;
+    dob: string; // ISO timestamp e.g. "1990-01-15T00:00:00.000Z"
     phone?: string;
+  };
+}
+
+// Raw NIN validation shape from NIBSS (different from BVN — uses 'response' wrapper, no 'success' field)
+interface NibssValidateNinRaw {
+  message: string;
+  response: {
+    _id: string;
+    nin: string;
+    firstName: string;
+    lastName: string;
+    dob: string;
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
@@ -78,6 +141,38 @@ export interface NibssInsertNinPayload {
   firstName: string;
   lastName: string;
   dob: string;
+}
+
+/**
+ * Actual NIBSS insertBvn response: { success, message, data: { bvn, firstName, lastName, dob, phone, createdAt } }
+ */
+export interface NibssInsertBvnResponse {
+  success: boolean;
+  message: string;
+  data: {
+    bvn: string;
+    firstName: string;
+    lastName: string;
+    dob: string;
+    phone: string;
+    createdAt: string;
+  };
+}
+
+/**
+ * Actual NIBSS insertNin response: { message, response: { nin, firstName, lastName, dob, _id, createdAt, updatedAt } }
+ */
+export interface NibssInsertNinResponse {
+  message: string;
+  response: {
+    nin: string;
+    firstName: string;
+    lastName: string;
+    dob: string;
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 // ─── API Wrappers ────────────────────────────────────────────────────────────
@@ -101,8 +196,8 @@ export async function getAccountBalance(accountNumber: string): Promise<NibssBal
 }
 
 /** GET /api/accounts */
-export async function getAllAccounts(): Promise<{ accounts: NibssNameEnquiryResponse[] }> {
-  const res = await nibssClient.get<{ accounts: NibssNameEnquiryResponse[] }>("/api/accounts");
+export async function getAllAccounts(): Promise<{ count: number; accounts: NibssAccountEntry[] }> {
+  const res = await nibssClient.get<{ count: number; accounts: NibssAccountEntry[] }>("/api/accounts");
   return res.data;
 }
 
@@ -118,27 +213,41 @@ export async function getTransactionStatus(transactionId: string): Promise<Nibss
   return res.data;
 }
 
-/** POST /api/validateBvn — no auth required on NIBSS side but we send token anyway */
+/** POST /api/validateBvn */
 export async function validateBvn(bvn: string): Promise<NibssValidateIdentityResponse> {
   const res = await nibssClient.post<NibssValidateIdentityResponse>("/api/validateBvn", { bvn });
   return res.data;
 }
 
-/** POST /api/validateNin — no auth required on NIBSS side but we send token anyway */
+/**
+ * POST /api/validateNin
+ * NIBSS returns a different shape for NIN vs BVN; we normalize to NibssValidateIdentityResponse.
+ */
 export async function validateNin(nin: string): Promise<NibssValidateIdentityResponse> {
-  const res = await nibssClient.post<NibssValidateIdentityResponse>("/api/validateNin", { nin });
-  return res.data;
+  const res = await nibssClient.post<NibssValidateNinRaw>("/api/validateNin", { nin });
+  const raw = res.data;
+  // Normalize to unified shape
+  return {
+    success: true, // presence of 'response' object indicates success
+    message: raw.message,
+    data: {
+      nin: raw.response.nin,
+      firstName: raw.response.firstName,
+      lastName: raw.response.lastName,
+      dob: raw.response.dob,
+    },
+  };
 }
 
 /** POST /api/insertBvn — admin / seeding */
-export async function insertBvn(payload: NibssInsertBvnPayload): Promise<{ message: string; bvn: string }> {
-  const res = await nibssClient.post<{ message: string; bvn: string }>("/api/insertBvn", payload);
+export async function insertBvn(payload: NibssInsertBvnPayload): Promise<NibssInsertBvnResponse> {
+  const res = await nibssClient.post<NibssInsertBvnResponse>("/api/insertBvn", payload);
   return res.data;
 }
 
 /** POST /api/insertNin — admin / seeding */
-export async function insertNin(payload: NibssInsertNinPayload): Promise<{ message: string; nin: string }> {
-  const res = await nibssClient.post<{ message: string; nin: string }>("/api/insertNin", payload);
+export async function insertNin(payload: NibssInsertNinPayload): Promise<NibssInsertNinResponse> {
+  const res = await nibssClient.post<NibssInsertNinResponse>("/api/insertNin", payload);
   return res.data;
 }
 

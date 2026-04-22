@@ -5,14 +5,10 @@ import { requireAdminKey } from "../middleware/adminAuth";
 
 const router = Router();
 
-/**
- * @swagger
- * tags:
- *   name: Account
- *   description: Bank account management
- */
+// Admin-only route — only needs admin key, not a customer JWT
+router.get("/all", requireAdminKey, getAllAccounts);
 
-// All account routes require customer JWT
+// All customer routes below require a valid JWT
 router.use(authenticate);
 
 /**
@@ -200,6 +196,4 @@ router.get("/name-enquiry/:accountNumber", nameEnquiry);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/all", requireAdminKey, getAllAccounts);
-
 export default router;

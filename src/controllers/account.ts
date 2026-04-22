@@ -36,9 +36,9 @@ export async function createAccount(req: Request, res: Response, next: NextFunct
 
     const account = await Account.create({
       customerId: customer._id,
-      accountNumber: nibssAccount.accountNumber,
-      bankCode: nibssAccount.bankCode,
-      bankName: nibssAccount.bankName,
+      accountNumber: nibssAccount.account.accountNumber,
+      bankCode: nibssAccount.account.bankCode,
+      accountName: nibssAccount.account.accountName,
     });
 
     await Customer.findByIdAndUpdate(customer._id, { hasAccount: true });
@@ -49,8 +49,8 @@ export async function createAccount(req: Request, res: Response, next: NextFunct
       account: {
         accountNumber: account.accountNumber,
         bankCode: account.bankCode,
-        bankName: account.bankName,
-        balance: nibssAccount.balance,
+        accountName: account.accountName,
+        balance: nibssAccount.account.balance,
       },
     });
   } catch (err) {
@@ -79,7 +79,7 @@ export async function getMyAccount(req: Request, res: Response, next: NextFuncti
       account: {
         accountNumber: account.accountNumber,
         bankCode: account.bankCode,
-        bankName: account.bankName,
+        accountName: account.accountName,
         balance,
       },
     });

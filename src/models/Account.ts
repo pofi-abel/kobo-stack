@@ -5,7 +5,7 @@ export interface IAccount extends Document {
   customerId: Types.ObjectId;
   accountNumber: string;
   bankCode: string;
-  bankName: string;
+  accountName: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,7 +20,7 @@ const accountSchema = new Schema<IAccount>(
     },
     accountNumber: { type: String, required: true, unique: true },
     bankCode: { type: String, required: true },
-    bankName: { type: String, required: true },
+    accountName: { type: String, required: true },
   },
   { timestamps: true },
 );

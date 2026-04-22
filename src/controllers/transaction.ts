@@ -68,19 +68,19 @@ export async function transfer(req: Request, res: Response, next: NextFunction):
     // Persist debit transaction locally for history & privacy
     const txn = await Transaction.create({
       customerId: customer._id,
-      transactionId: nibssResult.transactionId,
+      transactionId: nibssResult.reference,
       type: "debit",
       from: senderAccount.accountNumber,
       to: body.to,
       amount: body.amount,
       status: nibssResult.status as "SUCCESS" | "PENDING" | "FAILED",
-      nibssTimestamp: null,
+      nibssTimestamp: nibssResult.createdAt,
       idempotencyKey,
     });
 
     res.status(200).json({
       status: "success",
-      message: nibssResult.message,
+      message: "Transfer successful",
       transactionId: txn.transactionId,
       amount: txn.amount,
       from: txn.from,
@@ -119,19 +119,19 @@ export async function getTransactionStatus(req: Request, res: Response, next: Ne
     if (nibssData.status !== txn.status) {
       await Transaction.findByIdAndUpdate(txn._id, {
         status: nibssData.status as "SUCCESS" | "PENDING" | "FAILED",
-        nibssTimestamp: nibssData.timestamp,
+        nibssTimestamp: nibssData.createdAt,
       });
     }
 
     res.status(200).json({
       status: "success",
       data: {
-        transactionId: nibssData.transactionId,
+        transactionId: nibssData.reference,
         status: nibssData.status,
         amount: nibssData.amount,
-        from: nibssData.from,
-        to: nibssData.to,
-        timestamp: nibssData.timestamp,
+        from: nibssData.senderAccount,
+        to: nibssData.receiverAccount,
+        timestamp: nibssData.createdAt,
       },
     });
   } catch (err) {
