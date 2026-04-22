@@ -53,12 +53,16 @@ export interface NibssTransactionResponse {
 }
 
 export interface NibssValidateIdentityResponse {
-  valid: boolean;
-  bvn?: string;
-  nin?: string;
-  firstName: string;
-  lastName: string;
-  dob: string;
+  success: boolean;
+  message: string;
+  data: {
+    bvn?: string;
+    nin?: string;
+    firstName: string;
+    lastName: string;
+    dob: string;
+    phone?: string;
+  };
 }
 
 export interface NibssInsertBvnPayload {

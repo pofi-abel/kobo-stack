@@ -52,12 +52,13 @@ export async function verifyKyc(req: Request, res: Response, next: NextFunction)
       throw new BadRequestError(`${body.kycType.toUpperCase()} validation failed. Please check the details and try again.`);
     }
 
-    if (!identityData.valid) {
+    if (!identityData.success) {
       throw new BadRequestError(`${body.kycType.toUpperCase()} is not registered in the NIBSS identity store`);
     }
 
-    // Verify dob matches NIBSS record
-    if (identityData.dob !== body.dob) {
+    // Verify dob matches NIBSS record (normalize ISO timestamp → date-only string)
+    const nibssDob = identityData.data.dob.split("T")[0];
+    if (nibssDob !== body.dob) {
       throw new BadRequestError("Date of birth does not match the identity record");
     }
 
@@ -67,17 +68,17 @@ export async function verifyKyc(req: Request, res: Response, next: NextFunction)
       dob: body.dob,
       kycVerified: true,
       // Update name from NIBSS if not already set
-      firstName: customer.firstName || identityData.firstName,
-      lastName: customer.lastName || identityData.lastName,
+      firstName: customer.firstName || identityData.data.firstName,
+      lastName: customer.lastName || identityData.data.lastName,
     });
 
     res.status(200).json({
       status: "success",
       message: "KYC verification successful",
       identity: {
-        firstName: identityData.firstName,
-        lastName: identityData.lastName,
-        dob: identityData.dob,
+        firstName: identityData.data.firstName,
+        lastName: identityData.data.lastName,
+        dob: nibssDob,
         kycType: body.kycType,
       },
     });
